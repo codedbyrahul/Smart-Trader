@@ -11,11 +11,11 @@ const StockDetails = ({route}) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   console.log(stockInfo, 'stockInfostockInfo');
-  // console.log(symbolInfo?.url, 'symbolInfo');
+  // console.log(symbolInfo, 'symbolInfo');
 
   useEffect(() => {
     if (symbolInfo && symbolInfo?.url) {
-      dispatch(fetchStockData({url: symbolInfo}));
+      dispatch(fetchStockData({url: symbolInfo?.symbol}));
     }
   }, [dispatch, symbolInfo]);
 
@@ -29,8 +29,23 @@ const StockDetails = ({route}) => {
       />
     );
   };
-
-  return <>{header()}</>;
+  const mainComponent = () => {
+    return (
+      <View style={{fles: 1, justifyContent: 'center', top: '10%'}}>
+        <Text>{stockInfo?.searchData?.info?.companyName}</Text>
+      </View>
+    );
+  };
+  console.log(
+    stockInfo?.searchData?.info?.companyName,
+    'stockInfo?.info?.companyName',
+  );
+  return (
+    <>
+      {header()}
+      {mainComponent()}
+    </>
+  );
 };
 
 export default StockDetails;

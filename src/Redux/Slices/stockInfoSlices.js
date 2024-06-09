@@ -11,15 +11,14 @@ const initialState = {
 export const fetchStockData = createAsyncThunk(
   'stockInfo/fetchStockData',
   async query => {
-    console.log(query, 'queryquery');
+    console.log(query, 'queryquerySlice');
     const baseUrl = await getBaseUrl();
-    // const response = await axios.get(
-    //   `${baseUrl}quote-equity?symbol=${query?.symbol}`,
-    // );
-    const response = await axios.get(`${baseUrl}${query?.url}`);
-
+    const response = await axios.get(
+      `${baseUrl}quote-equity?symbol=${query?.url}`,
+    );
     // const response = await axios.get(`${baseUrl}${query?.url}`);
-    console.log(baseUrl, 'response');
+
+    console.log(response?.data, 'response');
     //  `${baseUrl}quote-equity?symbol=${query?.symbol}`,
     return response?.data;
   },

@@ -31,7 +31,8 @@ const Home = () => {
       dispatch(fetchStockData({searchQuery}));
     }
   }, [dispatch, searchQuery]);
-  console.log(searchData, 'searchDatasearchDatasearchData');
+  console.log(searchData?.url, 'searchDatasearchDatasearchData');
+  // console.log(error, 'errorerror');
   useEffect(() => {
     handleSearch();
   }, [handleSearch]);
@@ -142,7 +143,6 @@ const Home = () => {
             renderTabBar={props => (
               <TabBar
                 {...props}
-                style={{backgroundColor: 'white'}}
                 indicatorStyle={styles.indicater}
                 renderLabel={renderLabel}
               />
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   },
   SearchContainer: {
     width: '90%',
-    height: '16%',
+    height: '10%',
     borderWidth: 2,
     marginHorizontal: 20,
     borderRadius: 15,
