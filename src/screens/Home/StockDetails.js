@@ -18,7 +18,7 @@ const StockDetails = ({route}) => {
       dispatch(fetchStockData({url: symbolInfo?.symbol}));
     }
   }, [dispatch, symbolInfo]);
-
+  console.log(stockInfo);
   const header = () => {
     return (
       <Header
@@ -32,6 +32,13 @@ const StockDetails = ({route}) => {
   const mainComponent = () => {
     return (
       <View style={{fles: 1, justifyContent: 'center', top: '10%'}}>
+        <Text>Stock Name :{stockInfo?.searchData?.info?.companyName}</Text>
+        <Text>lastPrice : {stockInfo?.searchData?.priceInfo?.lastPrice}</Text>
+        <Text>OpenPrice :{stockInfo?.searchData?.priceInfo?.open}</Text>
+        <Text>FaceValue :{stockInfo?.searchData?.securityInfo?.faceValue}</Text>
+        <Text>Closing Price : {stockInfo?.searchData?.priceInfo?.close}</Text>
+        <Text>{stockInfo?.searchData?.info?.companyName}</Text>
+        <Text>{stockInfo?.searchData?.info?.companyName}</Text>
         <Text>{stockInfo?.searchData?.info?.companyName}</Text>
       </View>
     );
