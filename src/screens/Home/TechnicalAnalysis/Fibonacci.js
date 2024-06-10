@@ -1,124 +1,123 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, TextInput, Button} from 'react-native';
+import React, {useState} from 'react';
+import {View, Text, TextInput, Button, StyleSheet} from 'react-native';
 
-const Fibonacci = () => {
-  const [symbol, setSymbol] = useState('AAPL'); // Default symbol
-  const [potentialSupport, setPotentialSupport] = useState(null);
-  const [potentialResistance, setPotentialResistance] = useState(null);
-  const [trend, setTrend] = useState(null);
+const YAHOO_FINANCE_URL = 'https://query1.finance.yahoo.com/v8/finance/chart/';
+
+const getStockData = async symbol => {
+  try {
+    const response = await fetch(
+      `${YAHOO_FINANCE_URL}${symbol}?range=1y&interval=1d`,
+    );
+    const data = await response.json();
+
+    if (response.status === 200 && data.chart.result) {
+      const prices = data.chart.result[0].indicators.quote[0].close;
+      const price_high = Math.max(...prices);
+      const price_low = Math.min(...prices);
+      const price_swing = price_high - price_low;
+
+      const fib_levels = [0.236, 0.382, 0.5, 0.618, 0.786];
+      const fib_retracement_levels = fib_levels.map(
+        level => price_high - level * price_swing,
+      );
+
+      return {
+        prices,
+        price_high,
+        price_low,
+        price_swing,
+        fib_retracement_levels,
+      };
+    } else {
+      console.log('Failed to retrieve historical data.');
+      return null;
+    }
+  } catch (e) {
+    console.log(`Error: ${e}`);
+    return null;
+  }
+};
+
+const getCurrentPrice = async symbol => {
+  try {
+    const response = await fetch(
+      `${YAHOO_FINANCE_URL}${symbol}?range=1d&interval=1d`,
+    );
+    const data = await response.json();
+
+    if (response.status === 200 && data.chart.result) {
+      const currentPrice = data.chart.result[0].meta.regularMarketPrice;
+      return currentPrice;
+    } else {
+      console.log('Failed to retrieve current price.');
+      return null;
+    }
+  } catch (e) {
+    console.log(`Error: ${e}`);
+    return null;
+  }
+};
+
+const StockApp = () => {
+  const [symbol, setSymbol] = useState('');
+  const [currentPrice, setCurrentPrice] = useState(null);
+  const [stockData, setStockData] = useState(null);
   const [recommendation, setRecommendation] = useState(null);
-  const [stopLossPrice, setStopLossPrice] = useState(null);
-  const [targetPrice, setTargetPrice] = useState(null);
 
-  const apiKey = 'pk_32881e850d6541fb8041a8c605ed407d';
+  const handleGetStockData = async () => {
+    const currentPrice = await getCurrentPrice(symbol);
+    if (currentPrice !== null) {
+      setCurrentPrice(currentPrice);
 
-  const fetchHistoricalData = async () => {
-    const fibLevels = [0.236, 0.382, 0.5, 0.618, 0.786];
-    try {
-      const response = await fetch(
-        `https://cloud.iexapis.com/stable/stock/${symbol}/chart/1y?token=${apiKey}`,
-      );
-      if (!response.ok) {
-        throw new Error('Failed to fetch historical data');
-      }
-      const historicalData = await response.json();
-      const prices = historicalData.map(quote => quote.close);
-      const priceHigh = Math.max(...prices);
-      const priceLow = Math.min(...prices);
-      const priceSwing = priceHigh - priceLow;
-      const fibRetracementLevels = fibLevels.map(
-        level => priceHigh - level * priceSwing,
-      );
+      const data = await getStockData(symbol);
+      if (data) {
+        const stop_loss_pct = 0.02;
+        const target_pct = 0.05;
+        const stop_loss = currentPrice * (1 - stop_loss_pct);
+        const target = currentPrice * (1 + target_pct);
 
-      const potentialResistance = fibRetracementLevels.find(
-        level => level > priceLow && level < priceHigh,
-      );
-      const potentialSupport = fibRetracementLevels.find(
-        level => level < priceHigh && level > priceLow,
-      );
+        let recommendationText = `Recommendation: Consider buying\nStop Loss: ${stop_loss.toFixed(
+          2,
+        )}\nTarget: ${target.toFixed(2)}`;
 
-      setPotentialSupport(potentialSupport);
-      setPotentialResistance(potentialResistance);
-    } catch (error) {
-      console.error('Error fetching historical data:', error);
-    }
-  };
+        const price_swing = data.price_swing;
+        const fib_levels = [0.236, 0.382, 0.5, 0.618, 0.786];
+        for (let i = 0; i < data.fib_retracement_levels.length; i++) {
+          const retracement_level = data.fib_retracement_levels[i];
+          if (Math.abs(currentPrice - retracement_level) < 0.05 * price_swing) {
+            recommendationText += `\nCurrent price is near ${
+              fib_levels[i] * 100
+            }% Fibonacci retracement level: ${retracement_level.toFixed(2)}`;
+          }
+        }
 
-  const fetchCurrentData = async () => {
-    try {
-      const response = await fetch(
-        `https://cloud.iexapis.com/stable/stock/${symbol}/quote?token=${apiKey}`,
-      );
-      if (!response.ok) {
-        throw new Error('Failed to fetch current data');
-      }
-      const currentData = await response.json();
-      const currentPrice = currentData.latestPrice;
-      const prevClose = currentData.previousClose;
-
-      const stopLossPct = 0.02;
-      const targetPct = 0.05;
-      const stopLoss = prevClose * (1 - stopLossPct);
-      const target = prevClose * (1 + targetPct);
-
-      let trend, recommendation;
-      if (currentPrice > prevClose) {
-        trend = 'uptrend';
-        recommendation = 'Consider buying';
-      } else if (currentPrice < prevClose) {
-        trend = 'downtrend';
-        recommendation = 'Consider selling';
+        setRecommendation(recommendationText);
+        setStockData(data);
       } else {
-        trend = 'sideways trend';
-        recommendation = 'No clear trade recommendation';
+        setRecommendation('No data available for the specified stock symbol.');
       }
-
-      setTrend(trend);
-      setRecommendation(recommendation);
-      setStopLossPrice(stopLoss);
-      setTargetPrice(target);
-    } catch (error) {
-      console.error('Error fetching current data:', error);
+    } else {
+      setRecommendation('Failed to retrieve current price.');
     }
-  };
-
-  useEffect(() => {
-    fetchHistoricalData();
-    fetchCurrentData();
-  }, [symbol]);
-
-  const handleSymbolChange = value => {
-    setSymbol(value);
   };
 
   return (
     <View style={styles.container}>
+      <Text style={styles.header}>Stock App</Text>
       <TextInput
         style={styles.input}
+        placeholder="Enter stock symbol"
         value={symbol}
-        onChangeText={handleSymbolChange}
-        placeholder="Enter symbol"
+        onChangeText={setSymbol}
       />
-      <Button
-        title="Submit"
-        onPress={() => {
-          fetchHistoricalData();
-          fetchCurrentData();
-        }}
-      />
-      <Text style={styles.text}>
-        Potential Support Level: {potentialSupport}
-      </Text>
-      <Text style={styles.text}>
-        Potential Resistance Level: {potentialResistance}
-      </Text>
-      <Text style={styles.text}>Trend: {trend}</Text>
-      <Text style={styles.text}>Recommendation: {recommendation}</Text>
-      {stopLossPrice && (
-        <Text style={styles.text}>Stop Loss: {stopLossPrice.toFixed(2)}</Text>
+      <Button title="Get Stock Data" onPress={handleGetStockData} />
+      {currentPrice && (
+        <Text style={styles.currentPrice}>
+          Current Price of {symbol}: {currentPrice}
+        </Text>
       )}
-      {targetPrice && (
-        <Text style={styles.text}>Target: {targetPrice.toFixed(2)}</Text>
+      {recommendation && (
+        <Text style={styles.recommendation}>{recommendation}</Text>
       )}
     </View>
   );
@@ -128,22 +127,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    padding: 20,
+  },
+  header: {
+    fontSize: 24,
+    marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    width: '80%',
+    marginBottom: 20,
+    paddingLeft: 10,
   },
-  text: {
-    fontSize: 20,
-    color: '#007bff',
-    marginBottom: 10,
+  currentPrice: {
+    fontSize: 18,
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  recommendation: {
+    fontSize: 16,
+    marginTop: 20,
+    textAlign: 'center',
   },
 });
 
-export default Fibonacci;
+export default StockApp;
