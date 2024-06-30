@@ -31,8 +31,6 @@ const Home = () => {
       dispatch(fetchStockData({searchQuery}));
     }
   }, [dispatch, searchQuery]);
-  console.log(searchData?.url, 'searchDatasearchDatasearchData');
-  // console.log(error, 'errorerror');
   useEffect(() => {
     handleSearch();
   }, [handleSearch]);
@@ -41,7 +39,6 @@ const Home = () => {
       <Header Title={'Smart Trader'} LeftStyle={{width: 50, height: 55}} />
     );
   };
-
   const [index, setIndex] = useState(0);
   const [routes] = useState([
     {key: 'TechnicalAnalysis', title: 'Technical\nAnalysis'},

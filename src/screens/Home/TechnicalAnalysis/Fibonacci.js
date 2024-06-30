@@ -1,12 +1,12 @@
 import React, {useState} from 'react';
 import {View, Text, TextInput, Button, StyleSheet} from 'react-native';
-
+import KLineChart from 'klinecharts';
 const YAHOO_FINANCE_URL = 'https://query1.finance.yahoo.com/v8/finance/chart/';
 
 const getStockData = async symbol => {
   try {
     const response = await fetch(
-      `${YAHOO_FINANCE_URL}${symbol}?range=1y&interval=1d`,
+      `${YAHOO_FINANCE_URL}${symbol}.NS?range=1y&interval=1d`,
     );
     const data = await response.json();
 
@@ -41,7 +41,7 @@ const getStockData = async symbol => {
 const getCurrentPrice = async symbol => {
   try {
     const response = await fetch(
-      `${YAHOO_FINANCE_URL}${symbol}?range=1d&interval=1d`,
+      `${YAHOO_FINANCE_URL}${symbol}.NS?range=1d&interval=1d`,
     );
     const data = await response.json();
 
@@ -100,9 +100,32 @@ const StockApp = () => {
       setRecommendation('Failed to retrieve current price.');
     }
   };
-
+  const data = [
+    {
+      timestamp: 1624597200000,
+      open: 35000,
+      high: 35500,
+      low: 34800,
+      close: 35300,
+    },
+    {
+      timestamp: 1624683600000,
+      open: 35300,
+      high: 36000,
+      low: 35000,
+      close: 35800,
+    },
+    {
+      timestamp: 1624770000000,
+      open: 35800,
+      high: 36200,
+      low: 35500,
+      close: 36000,
+    },
+  ];
   return (
     <View style={styles.container}>
+      {/* <KLineChart style={styles.chart} data={data} /> */}
       <Text style={styles.header}>Stock App</Text>
       <TextInput
         style={styles.input}
@@ -150,6 +173,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 20,
     textAlign: 'center',
+  },
+  chart: {
+    width: '100%',
+    height: 300,
   },
 });
 

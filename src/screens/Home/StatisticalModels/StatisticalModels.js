@@ -5,6 +5,8 @@ const StatisticalModels = () => {
   return (
     <View>
       <Text style={styles.homeContainer}>{'StatisticalModels'}</Text>
+      <Text style={styles.homeContainer}>{'Regression Analysis'}</Text>
+      <Text style={styles.homeContainer}>{'Time series Analysis'}</Text>
     </View>
   );
 };
