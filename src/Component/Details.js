@@ -7,14 +7,7 @@ const Details = props => {
   const navigation = useNavigation();
   const Data = props?.route?.params?.item;
   const header = () => {
-    return (
-      <Header
-        LeftButton={() => navigation.navigate('BottomTab')}
-        Title={Data?.title}
-        LeftIcon={require('../Assets/Icons/back.png')}
-        LeftStyle={{width: 20, height: 20}}
-      />
-    );
+    return <Header Title={Data?.title} LeftIcon />;
   };
   const SearchBar = () => {
     return (

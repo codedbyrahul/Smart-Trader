@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
 import {View, Text, TextInput, Button, StyleSheet} from 'react-native';
 import KLineChart from 'klinecharts';
+import Header from '../../../Component/Header';
+
 const YAHOO_FINANCE_URL = 'https://query1.finance.yahoo.com/v8/finance/chart/';
 
 const getStockData = async symbol => {
@@ -58,6 +60,28 @@ const getCurrentPrice = async symbol => {
   }
 };
 
+const calculateRSI = (prices, period = 14) => {
+  let gains = 0;
+  let losses = 0;
+
+  for (let i = 1; i < period; i++) {
+    const difference = prices[i] - prices[i - 1];
+    if (difference > 0) {
+      gains += difference;
+    } else {
+      losses -= difference;
+    }
+  }
+
+  const averageGain = gains / period;
+  const averageLoss = losses / period;
+
+  const rs = averageGain / averageLoss;
+  const rsi = 100 - 100 / (1 + rs);
+
+  return rsi;
+};
+
 const StockApp = () => {
   const [symbol, setSymbol] = useState('');
   const [currentPrice, setCurrentPrice] = useState(null);
@@ -76,19 +100,36 @@ const StockApp = () => {
         const stop_loss = currentPrice * (1 - stop_loss_pct);
         const target = currentPrice * (1 + target_pct);
 
-        let recommendationText = `Recommendation: Consider buying\nStop Loss: ${stop_loss.toFixed(
-          2,
-        )}\nTarget: ${target.toFixed(2)}`;
+        let recommendationText = '';
 
         const price_swing = data.price_swing;
         const fib_levels = [0.236, 0.382, 0.5, 0.618, 0.786];
+        let buyRecommendation = false;
+
         for (let i = 0; i < data.fib_retracement_levels.length; i++) {
           const retracement_level = data.fib_retracement_levels[i];
           if (Math.abs(currentPrice - retracement_level) < 0.05 * price_swing) {
-            recommendationText += `\nCurrent price is near ${
+            recommendationText += `Current price is near ${
               fib_levels[i] * 100
-            }% Fibonacci retracement level: ${retracement_level.toFixed(2)}`;
+            }% Fibonacci retracement level: ${retracement_level.toFixed(2)}\n`;
+            buyRecommendation = true;
           }
+        }
+
+        if (buyRecommendation) {
+          recommendationText = `Recommendation: Consider buying\n${recommendationText}`;
+          recommendationText += `Stop Loss: ${stop_loss.toFixed(
+            2,
+          )}\nTarget: ${target.toFixed(2)}`;
+        } else {
+          recommendationText =
+            'No buying recommendation based on current data.\n';
+        }
+
+        // Check for bearish divergence (RSI)
+        const rsi = calculateRSI(data.prices);
+        if (rsi > 70) {
+          recommendationText += `\nBearish divergence detected (RSI > 70): Consider selling`;
         }
 
         setRecommendation(recommendationText);
@@ -100,49 +141,30 @@ const StockApp = () => {
       setRecommendation('Failed to retrieve current price.');
     }
   };
-  const data = [
-    {
-      timestamp: 1624597200000,
-      open: 35000,
-      high: 35500,
-      low: 34800,
-      close: 35300,
-    },
-    {
-      timestamp: 1624683600000,
-      open: 35300,
-      high: 36000,
-      low: 35000,
-      close: 35800,
-    },
-    {
-      timestamp: 1624770000000,
-      open: 35800,
-      high: 36200,
-      low: 35500,
-      close: 36000,
-    },
-  ];
+
   return (
-    <View style={styles.container}>
-      {/* <KLineChart style={styles.chart} data={data} /> */}
-      <Text style={styles.header}>Stock App</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter stock symbol"
-        value={symbol}
-        onChangeText={setSymbol}
-      />
-      <Button title="Get Stock Data" onPress={handleGetStockData} />
-      {currentPrice && (
-        <Text style={styles.currentPrice}>
-          Current Price of {symbol}: {currentPrice}
-        </Text>
-      )}
-      {recommendation && (
-        <Text style={styles.recommendation}>{recommendation}</Text>
-      )}
-    </View>
+    <>
+      <Header Title={'Fibonacci'} LeftIcon />
+      <View style={styles.container}>
+        {/* <KLineChart style={styles.chart} data={data} /> */}
+        <Text style={styles.header}>Stock App</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter stock symbol"
+          value={symbol}
+          onChangeText={setSymbol}
+        />
+        <Button title="Get Stock Data" onPress={handleGetStockData} />
+        {currentPrice && (
+          <Text style={styles.currentPrice}>
+            Current Price of {symbol}: {currentPrice}
+          </Text>
+        )}
+        {recommendation && (
+          <Text style={styles.recommendation}>{recommendation}</Text>
+        )}
+      </View>
+    </>
   );
 };
 

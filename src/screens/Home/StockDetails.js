@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import Header from '../../Component/Header';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
@@ -28,14 +28,7 @@ const StockDetails = ({route}) => {
   }, [dispatch, symbolInfo]);
 
   const header = () => {
-    return (
-      <Header
-        Title={'Stock Details'}
-        LeftStyle={{width: 20, height: 20, top: '20%'}}
-        LeftIcon={require('../../Assets/Icons/back.png')}
-        LeftButton={() => navigation.navigate('BottomTab')}
-      />
-    );
+    return <Header Title={'Stock Details'} LeftIcon />;
   };
   console.log(stockInfo, 'stockInfo');
   // useEffect(() => {
@@ -49,7 +42,11 @@ const StockDetails = ({route}) => {
 
   const mainComponent = () => {
     return (
-      <View style={{flex: 1, justifyContent: 'center', marginTop: '10%'}}>
+      <View
+        style={{
+          justifyContent: 'center',
+          marginTop: '10%',
+        }}>
         <Text>Stock Name: {stockInfo?.stockData?.info?.companyName}</Text>
         <Text>Last Price: {stockInfo?.stockData?.priceInfo?.lastPrice}</Text>
         <Text>Open Price: {stockInfo?.stockData?.priceInfo?.open}</Text>
@@ -62,10 +59,10 @@ const StockDetails = ({route}) => {
   };
 
   return (
-    <>
+    <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
       {header()}
       {mainComponent()}
-    </>
+    </SafeAreaView>
   );
 };
 
