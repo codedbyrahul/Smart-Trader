@@ -7,57 +7,72 @@ import {
   Animated,
   Easing,
 } from 'react-native';
+import {useDispatch} from 'react-redux';
+import {fetchIndexData} from '../Redux/Slices/IndexSlices';
 
 const data = [
-  {key: '1', title: 'NIFTY'},
-  {key: '2', title: 'NIFTY BANK'},
-  {key: '3', title: 'SENSEX'},
-  {key: '4', title: 'BENKEX'},
-  {key: '5', title: 'FIN NIFTY'},
-  {key: '6', title: 'MID CAP NIFTY'},
+  {key: '1', title: 'NIFTY', symbol: '^NSEI', price: ''},
+  {key: '2', title: 'NIFTY BANK', symbol: '^NSEBANK', price: ''},
+  {key: '3', title: 'SENSEX', symbol: '^BSESN', price: ''},
 ];
 
 const {width} = Dimensions.get('window');
 const numberOfData = data.length;
-
 const MovingIndexes = () => {
-  const scrollX = useRef(new Animated.Value(0)).current;
-  const smoothScrollX = useRef(new Animated.Value(0)).current; // For smooth scrolling
+  const dispatch = useDispatch();
+  const [prices, setPrices] = useState({});
+
+  const smoothScrollX = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef(null);
-  const [reverse, setReverse] = useState(false);
+
+  useEffect(() => {
+    const fetchAllIndicesData = async () => {
+      let pricesObj = {};
+      for (const item of data) {
+        try {
+          const response = await dispatch(fetchIndexData(item.symbol));
+          const price =
+            response.payload?.chart?.result[0]?.meta?.regularMarketPrice ||
+            'N/A';
+          pricesObj[item.symbol] = price;
+        } catch (error) {
+          console.error(`Failed to fetch data for ${item.title}:`, error);
+          pricesObj[item.symbol] = 'N/A';
+        }
+      }
+      setPrices(pricesObj);
+    };
+    fetchAllIndicesData();
+  }, [dispatch]);
 
   useEffect(() => {
     const animateScroll = () => {
-      const toValue = reverse
-        ? width * numberOfData
-        : width * numberOfData * -1;
-
+      smoothScrollX.setValue(0);
       Animated.timing(smoothScrollX, {
-        toValue: toValue,
-        duration: numberOfData * 6000, // Adjust duration for smoother flow
+        toValue: width * numberOfData,
+        duration: numberOfData * 8000,
         useNativeDriver: true,
         easing: Easing.linear,
       }).start(({finished}) => {
         if (finished) {
-          setReverse(!reverse); // Toggle reverse state
-          animateScroll(); // Restart the animation loop
+          animateScroll();
         }
       });
     };
 
-    const listenerId = smoothScrollX.addListener(({value}) => {
+    const listener = smoothScrollX.addListener(({value}) => {
       if (scrollViewRef.current) {
         const scrollValue = value % (width * numberOfData);
         scrollViewRef.current.scrollTo({x: scrollValue, animated: false});
       }
     });
 
-    animateScroll(); // Start the initial animation loop
+    animateScroll();
 
     return () => {
-      smoothScrollX.removeListener(listenerId);
+      smoothScrollX.removeListener(listener);
     };
-  }, [reverse, smoothScrollX]);
+  }, [smoothScrollX, width, numberOfData]);
 
   return (
     <View style={{marginVertical: '4%'}}>
@@ -69,7 +84,9 @@ const MovingIndexes = () => {
         contentContainerStyle={{flexDirection: 'row'}}>
         {data.map(item => (
           <View key={item.key} style={styles.item}>
-            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.title}>
+              {item.title} - {prices[item.symbol]}
+            </Text>
           </View>
         ))}
       </Animated.ScrollView>
@@ -81,7 +98,7 @@ const styles = StyleSheet.create({
   item: {
     marginHorizontal: 4,
     borderRadius: 20,
-    width: width - 290,
+    width: width - 200,
     justifyContent: 'center',
     alignItems: 'center',
     height: 40,
@@ -89,6 +106,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
+    color: 'red',
   },
 });
 

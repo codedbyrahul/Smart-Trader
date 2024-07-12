@@ -30,23 +30,19 @@ const Header = props => {
           {props.Title}
         </Text>
       )}
-      <TouchableOpacity onPress={props.RightButton} style={styles.notification}>
-        {props.Text && (
-          <View>
-            <Text style={{fontSize: 30}}>{props.Text}</Text>
-          </View>
+      <>
+        {props.RightComp && (
+          <TouchableOpacity
+            onPress={props.RightButton}
+            style={styles.notification}>
+            {props.Text && (
+              <View>
+                <Text style={{fontSize: 30}}>{props.Text}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
         )}
-        {props.RightIcon && (
-          <FastImage
-            style={{
-              height: '30%',
-              width: 20,
-            }}
-            source={props.RightIcon}
-            resizeMode="contain"
-          />
-        )}
-      </TouchableOpacity>
+      </>
     </SafeAreaView>
   );
 };

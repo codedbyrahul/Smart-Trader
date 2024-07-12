@@ -1,28 +1,14 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  SafeAreaView,
-  TextInput,
-  ActivityIndicator,
-  FlatList,
-  TouchableOpacity,
-} from 'react-native';
+import React, {useState} from 'react';
+import {View, StyleSheet, Text, SafeAreaView} from 'react-native';
 import Header from '../../Component/Header';
 import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
 import TechnicalAnalysis from './TechnicalAnalysis/TechnicalAnalysis';
 import StatisticalModels from './StatisticalModels/StatisticalModels';
 import Algorithms from './Algorithms/Algorithms';
-import {useDispatch, useSelector} from 'react-redux';
-import {fetchSearchData} from '../../Redux/Slices/nseSlices';
-import {useNavigation} from '@react-navigation/native';
-import {fetchStockData} from '../../Redux/Slices/stockInfoSlices';
+import {useSelector} from 'react-redux';
 import MovingIndexes from '../../Component/MovingIndexes';
 
 const Home = () => {
-  const dispatch = useDispatch();
-  const [searchQuery, setSearchQuery] = useState('');
   const chartData = useSelector(state => state.chart);
   const [index, setIndex] = useState(0);
   const [routes] = useState([
@@ -47,7 +33,7 @@ const Home = () => {
   );
 
   const header = () => {
-    return <Header Title={'Smart Trader'} Text="🔔" />;
+    return <Header Title={'Smart Trader'} Text="🔔" RightComp />;
   };
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
