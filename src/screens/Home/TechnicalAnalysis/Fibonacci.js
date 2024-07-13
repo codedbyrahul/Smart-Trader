@@ -1,12 +1,14 @@
 import React, {useState} from 'react';
 import {View, Text, TextInput, Button, StyleSheet} from 'react-native';
+import KLineChart from 'klinecharts';
+import Header from '../../../Component/Header';
 
 const YAHOO_FINANCE_URL = 'https://query1.finance.yahoo.com/v8/finance/chart/';
 
 const getStockData = async symbol => {
   try {
     const response = await fetch(
-      `${YAHOO_FINANCE_URL}${symbol}?range=1y&interval=1d`,
+      `${YAHOO_FINANCE_URL}${symbol}.NS?range=1y&interval=1d`,
     );
     const data = await response.json();
 
@@ -41,7 +43,7 @@ const getStockData = async symbol => {
 const getCurrentPrice = async symbol => {
   try {
     const response = await fetch(
-      `${YAHOO_FINANCE_URL}${symbol}?range=1d&interval=1d`,
+      `${YAHOO_FINANCE_URL}${symbol}.NS?range=1d&interval=1d`,
     );
     const data = await response.json();
 
@@ -56,6 +58,28 @@ const getCurrentPrice = async symbol => {
     console.log(`Error: ${e}`);
     return null;
   }
+};
+
+const calculateRSI = (prices, period = 14) => {
+  let gains = 0;
+  let losses = 0;
+
+  for (let i = 1; i < period; i++) {
+    const difference = prices[i] - prices[i - 1];
+    if (difference > 0) {
+      gains += difference;
+    } else {
+      losses -= difference;
+    }
+  }
+
+  const averageGain = gains / period;
+  const averageLoss = losses / period;
+
+  const rs = averageGain / averageLoss;
+  const rsi = 100 - 100 / (1 + rs);
+
+  return rsi;
 };
 
 const StockApp = () => {
@@ -76,19 +100,36 @@ const StockApp = () => {
         const stop_loss = currentPrice * (1 - stop_loss_pct);
         const target = currentPrice * (1 + target_pct);
 
-        let recommendationText = `Recommendation: Consider buying\nStop Loss: ${stop_loss.toFixed(
-          2,
-        )}\nTarget: ${target.toFixed(2)}`;
+        let recommendationText = '';
 
         const price_swing = data.price_swing;
         const fib_levels = [0.236, 0.382, 0.5, 0.618, 0.786];
+        let buyRecommendation = false;
+
         for (let i = 0; i < data.fib_retracement_levels.length; i++) {
           const retracement_level = data.fib_retracement_levels[i];
           if (Math.abs(currentPrice - retracement_level) < 0.05 * price_swing) {
-            recommendationText += `\nCurrent price is near ${
+            recommendationText += `Current price is near ${
               fib_levels[i] * 100
-            }% Fibonacci retracement level: ${retracement_level.toFixed(2)}`;
+            }% Fibonacci retracement level: ${retracement_level.toFixed(2)}\n`;
+            buyRecommendation = true;
           }
+        }
+
+        if (buyRecommendation) {
+          recommendationText = `Recommendation: Consider buying\n${recommendationText}`;
+          recommendationText += `Stop Loss: ${stop_loss.toFixed(
+            2,
+          )}\nTarget: ${target.toFixed(2)}`;
+        } else {
+          recommendationText =
+            'No buying recommendation based on current data.\n';
+        }
+
+        // Check for bearish divergence (RSI)
+        const rsi = calculateRSI(data.prices);
+        if (rsi > 70) {
+          recommendationText += `\nBearish divergence detected (RSI > 70): Consider selling`;
         }
 
         setRecommendation(recommendationText);
@@ -102,24 +143,28 @@ const StockApp = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Stock App</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter stock symbol"
-        value={symbol}
-        onChangeText={setSymbol}
-      />
-      <Button title="Get Stock Data" onPress={handleGetStockData} />
-      {currentPrice && (
-        <Text style={styles.currentPrice}>
-          Current Price of {symbol}: {currentPrice}
-        </Text>
-      )}
-      {recommendation && (
-        <Text style={styles.recommendation}>{recommendation}</Text>
-      )}
-    </View>
+    <>
+      <Header Title={'Fibonacci'} LeftIcon />
+      <View style={styles.container}>
+        {/* <KLineChart style={styles.chart} data={data} /> */}
+        <Text style={styles.header}>Stock App</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter stock symbol"
+          value={symbol}
+          onChangeText={setSymbol}
+        />
+        <Button title="Get Stock Data" onPress={handleGetStockData} />
+        {currentPrice && (
+          <Text style={styles.currentPrice}>
+            Current Price of {symbol}: {currentPrice}
+          </Text>
+        )}
+        {recommendation && (
+          <Text style={styles.recommendation}>{recommendation}</Text>
+        )}
+      </View>
+    </>
   );
 };
 
@@ -150,6 +195,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 20,
     textAlign: 'center',
+  },
+  chart: {
+    width: '100%',
+    height: 300,
   },
 });
 

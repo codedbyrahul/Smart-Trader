@@ -5,6 +5,7 @@ import Home from '../screens/Home/Home';
 import Indicators from '../screens/Indicators/Indicators';
 import Chart from '../screens/Chart/Chart';
 import Profile from '../screens/Profile/Profile';
+import Search from '../screens/Search/Search';
 
 const Tab = createBottomTabNavigator();
 
@@ -14,6 +15,11 @@ const tabs = [
     icon: require('../Assets/Icons/IndicatorIcon.png'),
     index: 1,
     title: 'Indicators',
+  },
+  {
+    icon: require('../Assets/Icons/ProfileIcon.png'),
+    index: 3,
+    title: 'Profile',
   },
   {icon: require('../Assets/Icons/ChartIcon.png'), index: 2, title: 'Chart'},
   {
@@ -45,6 +51,7 @@ const TabNavigation = () => {
       }}>
       <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Indicators" component={Indicators} />
+      <Tab.Screen name="Search" component={Search} />
       <Tab.Screen name="Chart" component={Chart} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>

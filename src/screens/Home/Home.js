@@ -1,47 +1,15 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  SafeAreaView,
-  TextInput,
-  ActivityIndicator,
-  FlatList,
-  TouchableOpacity,
-} from 'react-native';
+import React, {useState} from 'react';
+import {View, StyleSheet, Text, SafeAreaView} from 'react-native';
 import Header from '../../Component/Header';
 import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
 import TechnicalAnalysis from './TechnicalAnalysis/TechnicalAnalysis';
 import StatisticalModels from './StatisticalModels/StatisticalModels';
 import Algorithms from './Algorithms/Algorithms';
-import {useDispatch, useSelector} from 'react-redux';
-import {fetchSearchData} from '../../Redux/Slices/nseSlices';
-import {useNavigation} from '@react-navigation/native';
-import {fetchStockData} from '../../Redux/Slices/stockInfoSlices';
+import {useSelector} from 'react-redux';
+import MovingIndexes from '../../Component/MovingIndexes';
 
 const Home = () => {
-  const dispatch = useDispatch();
-  const {searchData, loading, error} = useSelector(state => state.nse);
-  const [searchQuery, setSearchQuery] = useState('');
   const chartData = useSelector(state => state.chart);
-  const navigation = useNavigation();
-  const handleSearch = useCallback(() => {
-    if (searchQuery.trim() !== '') {
-      dispatch(fetchSearchData({searchQuery}));
-      dispatch(fetchStockData({searchQuery}));
-    }
-  }, [dispatch, searchQuery]);
-  console.log(searchData?.url, 'searchDatasearchDatasearchData');
-  // console.log(error, 'errorerror');
-  useEffect(() => {
-    handleSearch();
-  }, [handleSearch]);
-  const header = () => {
-    return (
-      <Header Title={'Smart Trader'} LeftStyle={{width: 50, height: 55}} />
-    );
-  };
-
   const [index, setIndex] = useState(0);
   const [routes] = useState([
     {key: 'TechnicalAnalysis', title: 'Technical\nAnalysis'},
@@ -56,7 +24,7 @@ const Home = () => {
   });
 
   const renderLabel = ({route, focused}) => (
-    <View style={{width: '100%'}}>
+    <View style={{width: '100%', borderRadius: 20, backgroundColor: 'red'}}>
       <Text
         style={focused ? styles.selectTabBarLabel : styles.unSelectTabBarLabel}>
         {route.title}
@@ -64,92 +32,27 @@ const Home = () => {
     </View>
   );
 
-  const searchBar = () => {
-    return (
-      <View style={styles.SearchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search Stock"
-          placeholderTextColor={'black'}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onSubmitEditing={handleSearch}
-        />
-      </View>
-    );
+  const header = () => {
+    return <Header Title={'Smart Trader'} Text="🔔" RightComp />;
   };
-
-  const renderSearchResults = () => {
-    if (loading) {
-      return (
-        <ActivityIndicator size="large" color="#0000ff" style={{top: '20%'}} />
-      );
-    }
-
-    if (error) {
-      return (
-        <Text
-          style={{
-            fontSize: 22,
-            top: '20%',
-            color: 'black',
-          }}>
-          Error: {error}
-        </Text>
-      );
-    }
-
-    if (!searchData || searchData.length === 0) {
-      return (
-        <View style={{flex: 1, fontSize: 22, top: '20%', color: 'black'}}>
-          <Text>{'No Results Found !!'}</Text>
-        </View>
-      );
-    }
-    return (
-      <FlatList
-        data={searchData?.symbols}
-        keyExtractor={index => index.toString()}
-        style={{top: '4%'}}
-        renderItem={({item}) => {
-          return (
-            <TouchableOpacity
-              style={styles.item}
-              onPress={() =>
-                navigation.navigate('StockDetails', {symbolInfo: item})
-              }>
-              <Text style={{color: 'black', fontSize: 22}}>
-                {item?.symbol_info}
-              </Text>
-            </TouchableOpacity>
-          );
-        }}
-      />
-    );
-  };
-
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
       {header()}
-      {searchBar()}
-      {searchQuery?.length > 0 ? (
-        renderSearchResults()
-      ) : (
-        <View style={styles.tabContainer}>
-          <TabView
-            navigationState={{index, routes}}
-            renderScene={renderScene}
-            onIndexChange={setIndex}
-            renderTabBar={props => (
-              <TabBar
-                {...props}
-                indicatorStyle={styles.indicater}
-                renderLabel={renderLabel}
-              />
-            )}
-          />
-        </View>
-      )}
+      <MovingIndexes />
+      <View style={styles.tabContainer}>
+        <TabView
+          navigationState={{index, routes}}
+          renderScene={renderScene}
+          onIndexChange={setIndex}
+          renderTabBar={props => (
+            <TabBar
+              {...props}
+              indicatorStyle={styles.indicater}
+              renderLabel={renderLabel}
+            />
+          )}
+        />
+      </View>
     </SafeAreaView>
   );
 };
@@ -159,7 +62,6 @@ export default Home;
 const styles = StyleSheet.create({
   tabContainer: {
     flex: 1,
-    marginTop: 27,
   },
   indicater: {
     backgroundColor: 'rgb(13,76,171)',
@@ -176,24 +78,9 @@ const styles = StyleSheet.create({
   },
   SearchContainer: {
     width: '90%',
-    height: '10%',
+    height: '7%',
     borderWidth: 2,
     marginHorizontal: 20,
     borderRadius: 15,
-    top: '2%',
-  },
-  searchInput: {
-    width: '100%',
-    height: '100%',
-    paddingHorizontal: 10,
-    fontSize: 18,
-    color: 'black',
-  },
-  item: {
-    padding: 20,
-    top: '42%',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    flex: 1,
   },
 });

@@ -15,7 +15,6 @@ export const fetchSearchData = createAsyncThunk(
     const response = await axios.get(
       `${baseUrl}search/autocomplete?q=${query?.searchQuery}`,
     );
-    console.log(response?.data, 'response?.dataresponse?.dataresponse?.data');
     return response?.data;
   },
 );
