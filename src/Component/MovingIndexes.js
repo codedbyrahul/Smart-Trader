@@ -11,9 +11,11 @@ import {useDispatch} from 'react-redux';
 import {fetchIndexData} from '../Redux/Slices/IndexSlices';
 
 const data = [
-  {key: '1', title: 'NIFTY', symbol: '^NSEI', price: ''},
-  {key: '2', title: 'NIFTY BANK', symbol: '^NSEBANK', price: ''},
-  {key: '3', title: 'SENSEX', symbol: '^BSESN', price: ''},
+  {key: '1', title: 'NIFTY', symbol: '^NSEI'},
+  {key: '2', title: 'NIFTY BANK', symbol: '^NSEBANK'},
+  {key: '3', title: 'SENSEX', symbol: '^BSESN'},
+  {key: '4', title: 'NIFTY BANK', symbol: '^NSEBANK'},
+  {key: '5', title: 'SENSEX', symbol: '^BSESN'},
 ];
 
 const {width} = Dimensions.get('window');

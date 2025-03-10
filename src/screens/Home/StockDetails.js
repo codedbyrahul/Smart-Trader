@@ -4,28 +4,29 @@ import Header from '../../Component/Header';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
 import {fetchStockData} from '../../Redux/Slices/stockInfoSlices';
+import WebView from 'react-native-webview';
 
 const StockDetails = ({route}) => {
   const {symbolInfo} = route.params;
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const stockInfo = useSelector(state => state.stockInfo);
+  const stockInfo = useSelector(state => state.stockInfo?.stockData);
   const [price, setPrice] = useState(null);
   const [error, setError] = useState(null);
 
-  // useEffect(() => {
-  //   if (symbolInfo) {
-  //     dispatch(fetchStockData({url: symbolInfo}));
-  //   }
-  // }, [dispatch, symbolInfo]);
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (symbolInfo) {
-        dispatch(fetchStockData({url: symbolInfo}));
-      }
-    }, 3000);
-    return () => clearInterval(interval);
+    if (symbolInfo) {
+      dispatch(fetchStockData({url: symbolInfo}));
+    }
   }, [dispatch, symbolInfo]);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (symbolInfo) {
+  //       dispatch(fetchStockData({url: symbolInfo}));
+  //     }
+  //   }, 3000);
+  //   return () => clearInterval(interval);
+  // }, [dispatch, symbolInfo]);
 
   const header = () => {
     return <Header Title={'Stock Details'} LeftIcon />;
@@ -54,6 +55,14 @@ const StockDetails = ({route}) => {
         <Text>Closing Price: {stockInfo?.stockData?.priceInfo?.close}</Text>
         <Text>Stock Price: {price !== null ? price : 'Loading...'}</Text>
         {error && <Text>Error: {error}</Text>}
+        {/* <SafeAreaView style={styles.container}> */}
+        <WebView
+          source={{
+            uri: 'https://trendlyne.com/equity/139596/RVNL/rail-vikas-nigam-ltd/',
+          }}
+          style={{flex: 1}}
+        />
+        {/* </SafeAreaView> */}
       </View>
     );
   };

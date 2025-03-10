@@ -24,7 +24,7 @@ const Home = () => {
   });
 
   const renderLabel = ({route, focused}) => (
-    <View style={{width: '100%', borderRadius: 20, backgroundColor: 'red'}}>
+    <View style={{width: '100%', borderRadius: 20}}>
       <Text
         style={focused ? styles.selectTabBarLabel : styles.unSelectTabBarLabel}>
         {route.title}
