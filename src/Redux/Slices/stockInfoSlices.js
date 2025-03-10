@@ -10,7 +10,7 @@ const initialState = {
 export const fetchStockData = createAsyncThunk(
   'stockInfo/fetchStockData',
   async query => {
-    console.log(query.url.url);
+    console.log(query.url.url, 'query');
     try {
       const response = await axios.get(
         `https://www.nseindia.com/api/quote-equity?symbol=${query.url.symbol}`,
@@ -27,8 +27,8 @@ export const fetchStockData = createAsyncThunk(
         },
       );
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
+      // console.log('Response status:', response.status);
+      // console.log('Response headers:', response.headers);
       const contentType = response.headers['content-type'];
       console.log('Content-Type:', contentType);
 
@@ -36,7 +36,7 @@ export const fetchStockData = createAsyncThunk(
         const data = response.data;
         console.log('Response Data:', data);
 
-        return response; // Return data as the payload
+        return response;
       } else {
         throw new Error(
           'Response is not JSON or does not have expected content type',
@@ -63,7 +63,7 @@ const stockInfoSlice = createSlice({
       .addCase(fetchStockData.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.stockData = action.payload; // Update stockData with fetched data
-        // console.log('action', action.payload);
+        console.log('actionpayload', action.payload);
         state.error = null;
       })
       .addCase(fetchStockData.rejected, (state, action) => {

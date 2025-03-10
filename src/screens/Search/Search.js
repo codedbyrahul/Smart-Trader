@@ -13,6 +13,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {fetchStockData} from '../../Redux/Slices/stockInfoSlices';
 import {fetchSearchData} from '../../Redux/Slices/nseSlices';
 import {useNavigation} from '@react-navigation/native';
+import Header from '../../Component/Header';
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,7 +51,13 @@ const Search = () => {
 
     if (!searchData || searchData.length === 0) {
       return (
-        <View style={{flex: 1, fontSize: 22, top: '20%', color: 'black'}}>
+        <View
+          style={{
+            flex: 1,
+            fontSize: 22,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
           <Text>{'No Results Found !!'}</Text>
         </View>
       );
@@ -78,6 +85,7 @@ const Search = () => {
   };
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+      <Header Title={'Search Your Stock'} />
       <View style={styles.SearchContainer}>
         <TextInput
           style={styles.searchInput}
